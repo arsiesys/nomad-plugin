@@ -7,6 +7,7 @@ import static com.cloudbees.plugins.credentials.CredentialsMatchers.withId;
 import static com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -177,8 +178,9 @@ public class NomadCloud extends AbstractCloudImpl {
                     String jobNamespace = worker.getJobSummary().getNamespace();
                     JSONObject job = this.nomad.getRunningWorker(jobSummary.getJobID(), jobNamespace);
                     String jobRegion = job.getString("Region");
-                    Instant expiryTime = Instant.ofEpochMilli(job.getLong("SubmitTime"));
-                    expiryTime.plusSeconds(this.workerTimeout * 60);
+                    Instant expiryTime = Instant.EPOCH
+                        .plusNanos(job.getLong("SubmitTime"))
+                        .plus(workerTimeout, ChronoUnit.MINUTES);
                     Instant now = Instant.now();
                     if (now.isAfter(expiryTime)) {
                         LOGGER.log(Level.FINE, "Found Orphaned Node: " + worker.getID() + " in namespace " + jobNamespace + " in region " + jobRegion);
