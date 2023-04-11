@@ -90,6 +90,33 @@ public final class NomadApi {
             return FormValidation.error(e.getMessage());
         }
     }
+    
+    /**
+     * Verify Nomad allocation availability for a template
+     * @return true if the plan confirm that nomad is able to allocate the job
+     */
+    public boolean checkAllocAvailability(NomadWorkerTemplate template) {
+        String id = UUID.randomUUID().toString();
+
+        Request request = createRequestBuilder("/v1/job/" + id + "/plan", null)
+                .post(RequestBody.create(buildWorkerJob(id, "", template), JSON))
+                .build();
+
+        try (Response response = executeRequest(request)) {
+            if (!response.isSuccessful()) {
+                return false;
+            }
+            try (ResponseBody body = response.body()) {
+            	JSONObject bodyJson = new JSONObject(body.string());
+            	if (bodyJson.has("FailedTGAllocs") && bodyJson.isNull("FailedTGAllocs")) {
+            		return true;
+            	}
+            }
+        } catch (IOException e) {
+            return false;
+        }
+        return false;
+    }
 
     /**
      * Creates a new job in Nomad. It logs when it was not successful but there is no further indication whether this was successful or not.

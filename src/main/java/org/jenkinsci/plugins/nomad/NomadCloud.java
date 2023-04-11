@@ -138,7 +138,15 @@ public class NomadCloud extends AbstractCloudImpl {
             try {
                 while (excessWorkload > 0) {
                     LOGGER.log(Level.INFO, "Excess workload of " + excessWorkload + ", provisioning new Jenkins worker on Nomad cluster");
-
+                    
+                    boolean planAllocation = nomad.checkAllocAvailability(template);
+                    if (planAllocation == false) {
+                    	LOGGER.log(Level.INFO, "Nomad is unable to allocate the jobs anymore, exit the current provisioning loop");
+                    	return nodes;
+                    } else {
+                    	LOGGER.log(Level.INFO, "Nomad have capacity for one more job, let's continue");
+                    }
+                    		
                     final String workerName = template.createWorkerName();
                     nodes.add(new NodeProvisioner.PlannedNode(
                             workerName,

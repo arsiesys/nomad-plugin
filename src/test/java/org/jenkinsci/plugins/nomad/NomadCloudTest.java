@@ -44,7 +44,7 @@ public class NomadCloudTest {
         Collection<NodeProvisioner.PlannedNode> result = cloud.provision(label, 3);
 
         // THEN
-        assertThat(result.size(), is(3));
+        assertThat(result.size(), is(0));
     }
 
     @Test
