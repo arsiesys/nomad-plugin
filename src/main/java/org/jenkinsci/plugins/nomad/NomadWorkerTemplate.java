@@ -29,6 +29,7 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
 
     // persistent fields
     private final String prefix;
+    private final int maxConcurrentJobs;
     private final int idleTerminationInMinutes;
     private final boolean reusable;
     private final int numExecutors;
@@ -98,6 +99,7 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
     public NomadWorkerTemplate(
             String prefix,
             String labels,
+            int maxConcurrentJobs,
             int idleTerminationInMinutes,
             boolean reusable,
             int numExecutors,
@@ -105,6 +107,7 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
             String jobTemplate
     ) {
         this.prefix = prefix.isEmpty() ? SLAVE_PREFIX : prefix;
+        this.maxConcurrentJobs = maxConcurrentJobs;
         this.idleTerminationInMinutes = idleTerminationInMinutes;
         this.reusable = reusable;
         this.numExecutors = numExecutors;
@@ -125,6 +128,10 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
 
     public String getPrefix() {
         return prefix;
+    }
+
+    public int getMaxConcurrentJobs() {
+        return maxConcurrentJobs;
     }
 
     public int getIdleTerminationInMinutes() {
@@ -201,6 +208,7 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
             NomadWorkerTemplate template = new NomadWorkerTemplate(
                     "validate-template",
                     null,
+                    -1,
                     0,
                     false,
                     1,

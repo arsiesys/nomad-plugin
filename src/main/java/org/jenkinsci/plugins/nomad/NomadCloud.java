@@ -134,8 +134,14 @@ public class NomadCloud extends AbstractCloudImpl {
             if (prune)
                 pruneOrphanedWorkers(template);
 
+            int existingNodes = 0;
+            // Let's avoid an useless request to nomad api if no MaxConcurrentJobs is configured
+            if(template.getMaxConcurrentJobs() >= 0) {
+                existingNodes = this.nomad.getRunningWorkers(template.getPrefix()).length;
+            }
+
             try {
-                while (excessWorkload > 0) {
+                while (excessWorkload > 0 && checkExcessJobs(template,existingNodes,nodes.size())) {
                     LOGGER.log(Level.INFO, "Excess workload of " + excessWorkload + ", provisioning new Jenkins worker on Nomad cluster");
 
                     final String workerName = template.createWorkerName();
@@ -154,6 +160,25 @@ public class NomadCloud extends AbstractCloudImpl {
         }
 
         return Collections.emptyList();
+    }
+
+    /**
+     * Determine if we reached the maximum number of job we can create for a specific template.
+     * If the maximum configured is negative, we consider this configuration as unlimited.
+     * @param template
+     * @param existingNodes
+     * @param created
+     * @return false if the template maximum configured jobs isn't reached, otherwise, return true
+     */
+    private boolean checkExcessJobs(NomadWorkerTemplate template,int existingNodes, int created) {
+        int maxAllowed = template.getMaxConcurrentJobs();
+        int maxAllowedLeft = maxAllowed - existingNodes - created;
+
+        if (maxAllowed >= 0 && created >= maxAllowedLeft) {
+            LOGGER.log((Level.INFO), "Maximum jobs for template prefix: "+template.getPrefix()+" excedeed | Maximum: "+maxAllowed);
+            return false;
+        }
+        return true;
     }
 
 

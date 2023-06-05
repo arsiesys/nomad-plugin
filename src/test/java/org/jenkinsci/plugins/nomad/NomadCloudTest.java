@@ -122,6 +122,7 @@ public class NomadCloudTest {
         return new NomadWorkerTemplate(
                 "jenkins",
                 labels,
+                -1,
                 1,
                 true,
                 1,

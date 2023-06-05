@@ -12,6 +12,10 @@
             <f:textbox />
         </f:entry>
 
+        <f:entry title="Maximum Number of concurrent Job (-1 for unmimited)" field="maxConcurrentJobs">
+            <f:number default="-1" />
+        </f:entry>
+
         <f:entry title="Idle termination time" field="idleTerminationInMinutes">
             <f:number default="10" />
         </f:entry>
